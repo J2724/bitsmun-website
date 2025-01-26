@@ -179,47 +179,38 @@
 						
 						<style>
 							.btn-transparent {
+								display: block; /* Makes the button fill the parent link area */
 								background-color: transparent;
 								border: 2px solid #fff; /* White border */
 								color: #fff; /* White text */
+								text-align: center;
+								padding: 10px 20px;
+								font-size: 1.25rem; /* Adjust font size as needed */
+								border-radius: 5px;
 								transition: background-color 0.3s ease, opacity 0.3s ease; /* Smooth hover transition */
+								text-decoration: none; /* Removes underline for links */
 							}
 							.btn-transparent:hover {
 								background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent white background */
 								color: #fff; /* Ensure text stays white */
-							}
-							.btn-transparent a {
-								color: #fff; /* White text for links */
-								text-decoration: none;
-							}
-							.btn-transparent a:hover {
-								color: #fff; /* Ensure link text remains white on hover */
 							}
 						</style>
 						
 						<div class="container">
 							<div class="row justify-content-center">
 								<div class="col-6 col-md-3 d-flex justify-content-center">
-									<button type="button" class="btn btn-lg btn-transparent mt-2 w-100">
-										<a href="https://forms.gle/giYMLk3kKVuuBr117">REGISTER</a>
-									</button>
+									<a href="https://forms.gle/giYMLk3kKVuuBr117" class="btn-transparent mt-2 w-100">REGISTER</a>
 								</div>
 								<div class="col-6 col-md-3 d-flex justify-content-center">
-									<button type="button" class="btn btn-lg btn-transparent mt-2 w-100">
-										<a href="./allotment.html">ALLOTMENT</a>
-									</button>
+									<a href="./allotment.html" class="btn-transparent mt-2 w-100">ALLOTMENTS</a>
 								</div>
 							</div>
 							<div class="row justify-content-center">
 								<div class="col-6 col-md-3 d-flex justify-content-center">
-									<button type="button" class="btn btn-lg btn-transparent mt-2 w-100">
-										<a href="./coupons.html">COUPONS</a>
-									</button>
+									<a href="./coupons.html" class="btn-transparent mt-2 w-100">COUPONS</a>
 								</div>
 								<div class="col-6 col-md-3 d-flex justify-content-center">
-									<button type="button" class="btn btn-lg btn-transparent mt-2 w-100">
-										<a href="./idcards.html">ID CARDS</a>
-									</button>
+									<a href="./idcards.html" class="btn-transparent mt-2 w-100">ID CARDS</a>
 								</div>
 							</div>
 						</div>
