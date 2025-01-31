@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GSL Committee System</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+        }
+        .hidden { display: none; }
+        .matrix {
+            background-color: #ffffff;
+            padding: 25px;
+            border: 1px solid #dcdcdc;
+            margin: 20px auto;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .timer {
+            font-size: 28px;
+            color: #333;
+            margin: 25px 0;
+            padding: 15px;
+            background-color: #ececec;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+        select {
+            width: 100%;
+            min-height: 150px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 140px;
+            margin: 12px 0;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        #timerDisplay.red-alert {
+            color: #dc3545 !important;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: #333;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection">
+        <h2 style="color: #444; text-align: center;">Committee Login</h2>
+        <form onsubmit="return checkLogin(event)" style="text-align: center;">
+            <div style="margin: 15px;">
+                <input type="text" id="username" placeholder="Username" required 
+                       class="form-input" autocomplete="username">
+            </div>
+            <div style="margin: 15px;">
+                <input type="password" id="password" placeholder="Password" required 
+                       class="form-input" autocomplete="current-password">
+            </div>
+            <button type="submit" id="loginBtn">
+                <span id="loginText">Login</span>
+                <span id="loginSpinner" class="hidden loading"></span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Committee Matrix Section -->
+    <div id="committeeMatrix" class="hidden">
+        <h2 style="color: #444; text-align: center;">Committee: <span id="committeeName"></span></h2>
+        <div class="matrix">
+            <form onsubmit="return startGSLSession(event)">
+                <label style="color: #666; font-weight: bold;">Select Portfolios:</label>
+                <select id="portfolios" multiple required></select>
+
+                <div style="margin: 20px 0;">
+                    <label style="color: #666; font-weight: bold;">GSL Time (seconds):</label>
+                    <input type="number" id="gslTime" min="1" value="300" required>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label style="color: #666; font-weight: bold;">Warning Time (seconds):</label>
+                    <input type="number" id="warningTime" min="1" value="60" required>
+                </div>
+
+                <button type="submit" style="width: 100%;">
+                    Start GSL Session
+                </button>
+            </form>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="timerSection" class="hidden">
+            <div class="timer">
+                <span style="font-size: 0.8em; color: #666;">Time Remaining:</span><br>
+                <span id="timerDisplay">00:00</span>
+            </div>
+            <div style="text-align: center;">
+                <button onclick="stopTimer()">⏹️ Stop & Next</button>
+                <button id="nextBtn" class="hidden" onclick="nextPortfolio()">⏭️ Next Portfolio</button>
+            </div>
+            <p style="color: #666; text-align: center;">
+                Current Portfolio: <span id="currentPort" style="font-weight: bold;">None</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyyLG9x6dMmoNO_Wd3jlbmqZDM43YHUOzJmMMsN6unVlWrH6TlEHkunrhi5DSAyhxpi/exec';
+
+        async function checkLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            toggleLoginSpinner(true);
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `auth=${encodeURIComponent(username + ':' + password)}`
+                });
+                
+                if (!response.ok) throw new Error('Network error');
+                
+                const committee = await response.text();
+                console.log('Login response:', committee);
+
+                if (committee.startsWith('Error:')) {
+                    throw new Error(committee);
+                }
+
+                if (committee !== "Invalid" && committee !== "") {
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('committeeMatrix').classList.remove('hidden');
+                    document.getElementById('committeeName').textContent = committee;
+                    await loadPortfolios(committee);
+                } else {
+                    alert('Invalid credentials!');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            } finally {
+                toggleLoginSpinner(false);
+            }
+        }
+
+        async function loadPortfolios(committee) {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?committee=${encodeURIComponent(committee)}`);
+                if (!response.ok) throw new Error('Failed to load portfolios');
+                
+                const portfolios = await response.json();
+                console.log('Loaded portfolios:', portfolios);
+
+                const select = document.getElementById('portfolios');
+                select.innerHTML = portfolios.map(p => 
+                    `<option value="${p}">${p}</option>`
+                ).join('');
+                
+                if (portfolios.length === 0) {
+                    alert('No portfolios found for this committee!');
+                }
+            } catch (error) {
+                console.error('Portfolio error:', error);
+                alert('Failed to load portfolios: ' + error.message);
+            }
+        }
+
+        // Timer Management
+        let currentTimer;
+        let currentPortfolios = [];
+        let currentIndex = 0;
+        let totalTime = 0;
+        let warningTime = 0;
+
+        function startGSLSession(event) {
+            event.preventDefault();
+            currentPortfolios = Array.from(document.getElementById('portfolios').selectedOptions)
+                                   .map(opt => opt.value);
+            if (currentPortfolios.length === 0) {
+                alert('Please select at least one portfolio!');
+                return false;
+            }
+            
+            totalTime = parseInt(document.getElementById('gslTime').value);
+            warningTime = parseInt(document.getElementById('warningTime').value);
+            currentIndex = 0;
+            
+            document.getElementById('timerSection').classList.remove('hidden');
+            startTimer();
+            return false;
+        }
+
+        function startTimer() {
+            let timeLeft = totalTime;
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.classList.remove('red-alert');
+            
+            document.getElementById('currentPort').textContent = currentPortfolios[currentIndex];
+            document.getElementById('nextBtn').classList.add('hidden');
+
+            if (currentTimer) clearInterval(currentTimer);
+            
+            currentTimer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (timeLeft <= warningTime && timeLeft > 0) {
+                    timerDisplay.style.color = '#ffc107';
+                } else if (timeLeft <= 0) {
+                    timerDisplay.style.color = '#dc3545';
+                    timerDisplay.classList.add('red-alert');
+                } else {
+                    timerDisplay.style.color = '#333';
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(currentTimer);
+                    document.getElementById('nextBtn').classList.remove('hidden');
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(currentTimer);
+            document.getElementById('nextBtn').classList.remove('hidden');
+            document.getElementById('timerDisplay').style.color = '#333';
+            document.getElementById('timerDisplay').classList.remove('red-alert');
+        }
+
+        function nextPortfolio() {
+            currentIndex++;
+            if (currentIndex < currentPortfolios.length) {
+                startTimer();
+            } else {
+                alert('All portfolios completed!');
+                document.getElementById('timerSection').classList.add('hidden');
+            }
+        }
+
+        function toggleLoginSpinner(show) {
+            document.getElementById('loginText').classList.toggle('hidden', show);
+            document.getElementById('loginSpinner').classList.toggle('hidden', !show);
+            document.getElementById('loginBtn').disabled = show;
+        }
+    </script>
+</body>
+</html>
