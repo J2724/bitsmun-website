@@ -1,23 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GSL System</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f8f8f8; text-align: center; padding: 20px; }
-        .container { max-width: 600px; margin: auto; padding: 20px; background: #ddd; border-radius: 10px; }
-        input, button { margin: 10px 0; padding: 10px; width: 90%; }
+        .container { max-width: 500px; margin: auto; padding: 20px; background: #ddd; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+        input, button { margin: 10px 0; padding: 10px; width: 90%; border: none; border-radius: 5px; }
+        button { background: #444; color: white; cursor: pointer; font-size: 16px; }
+        button:hover { background: #333; }
         .hidden { display: none; }
         .timer { font-size: 24px; font-weight: bold; color: black; }
         .timer.warning { color: orange; }
         .timer.over { color: red; }
-        .portfolio-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
-        .portfolio-item { display: flex; align-items: center; gap: 10px; padding: 5px; background: #bbb; border-radius: 5px; padding: 8px; }
-        .portfolio-item label { font-weight: bold; }
-        .portfolio-item input { transform: scale(1.2); } /* Slightly bigger checkboxes */
+        
+        /* Responsive Portfolio Selection */
+        .portfolio-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+        .portfolio-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 5px; background: #bbb; border-radius: 5px; }
+        .portfolio-item label { font-weight: bold; flex: 1; text-align: left; }
+        .portfolio-item input { transform: scale(1.2); margin-right: 10px; }
+
+        @media (max-width: 600px) { /* Mobile Optimization */
+            .container { width: 90%; }
+            input, button { width: 95%; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Login -->
     <div class="container" id="login-container">
         <h1>GSL Login</h1>
         <input type="text" id="username" placeholder="Enter Username"><br>
@@ -25,6 +37,7 @@
         <button onclick="login()">Login</button>
     </div>
 
+    <!-- Portfolio Selection -->
     <div class="container hidden" id="portfolio-selection-container">
         <h1>Select Portfolios for GSL</h1>
         <h2 id="committee-name"></h2>
@@ -32,10 +45,10 @@
         <button onclick="startGSL()">Start GSL</button>
     </div>
 
+    <!-- GSL Timer -->
     <div class="container hidden" id="gsl-container">
         <h1>GSL Portfolio Matrix</h1>
         <h2 id="portfolio-name"></h2>
-
         <label>GSL Time (seconds):</label>
         <input type="number" id="gsl-time" value="60"><br>
 
@@ -49,75 +62,75 @@
         <h2 id="timer" class="timer">60 sec</h2>
 
         <button id="next-btn" class="hidden" onclick="nextPortfolio()">Next</button>
-
         <h2 id="gsl-over" class="hidden" style="color: green;">✅ GSL is Over!</h2>
     </div>
 
     <script>
-        var timer;
-        var timeLeft;
-        var warningTime;
-        var portfolios = [];
-        var selectedPortfolios = [];
-        var currentIndex = 0;
+        var timer, timeLeft, warningTime;
+        var portfolios = [], selectedPortfolios = [], currentIndex = 0;
         var scriptURL = "https://script.google.com/macros/s/AKfycbyyLG9x6dMmoNO_Wd3jlbmqZDM43YHUOzJmMMsN6unVlWrH6TlEHkunrhi5DSAyhxpi/exec";
 
-        function login() {
-            var username = document.getElementById("username").value;
-            var password = document.getElementById("password").value;
+        async function login() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
 
-            fetch(scriptURL + "?user=" + username + "&pass=" + password)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.setItem("committee", data.committee);
-                        document.getElementById("login-container").classList.add("hidden");
-                        document.getElementById("portfolio-selection-container").classList.remove("hidden");
-                        fetchPortfolios();
-                    } else {
-                        alert("Invalid login credentials");
-                    }
-                });
+            try {
+                let response = await fetch(`${scriptURL}?user=${username}&pass=${password}`);
+                let data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem("committee", data.committee);
+                    document.getElementById("login-container").classList.add("hidden");
+                    document.getElementById("portfolio-selection-container").classList.remove("hidden");
+                    fetchPortfolios();
+                } else {
+                    alert("Invalid login credentials");
+                }
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("Network error. Try again.");
+            }
         }
 
-        function fetchPortfolios() {
-            var committee = localStorage.getItem("committee");
+        async function fetchPortfolios() {
+            let committee = localStorage.getItem("committee");
             document.getElementById("committee-name").innerText = "Committee: " + committee;
 
-            fetch(scriptURL + "?committee=" + committee)
-                .then(response => response.json())
-                .then(data => {
-                    portfolios = data.portfolios;
-                    var portfolioList = document.getElementById("portfolio-list");
-                    portfolioList.innerHTML = "";
+            try {
+                let response = await fetch(`${scriptURL}?committee=${committee}`);
+                let data = await response.json();
 
-                    portfolios.forEach(function (portfolio, index) {
-                        var checkbox = document.createElement("input");
-                        checkbox.type = "checkbox";
-                        checkbox.id = "portfolio-" + index;
-                        checkbox.value = portfolio;
-                        checkbox.checked = false;  // Initially unchecked
+                portfolios = data.portfolios;
+                let portfolioList = document.getElementById("portfolio-list");
+                portfolioList.innerHTML = "";
 
-                        var label = document.createElement("label");
-                        label.htmlFor = "portfolio-" + index;
-                        label.innerText = portfolio;
+                portfolios.forEach((portfolio, index) => {
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.id = `portfolio-${index}`;
+                    checkbox.value = portfolio;
 
-                        var div = document.createElement("div");
-                        div.classList.add("portfolio-item");
-                        div.appendChild(label);
-                        div.appendChild(checkbox);
-                        portfolioList.appendChild(div);
-                    });
+                    let label = document.createElement("label");
+                    label.htmlFor = `portfolio-${index}`;
+                    label.innerText = portfolio;
+
+                    let div = document.createElement("div");
+                    div.classList.add("portfolio-item");
+                    div.appendChild(label);
+                    div.appendChild(checkbox);
+                    portfolioList.appendChild(div);
                 });
+
+            } catch (error) {
+                console.error("Fetch Portfolios Error:", error);
+                alert("Failed to load portfolios.");
+            }
         }
 
         function startGSL() {
-            selectedPortfolios = [];
-            portfolios.forEach((portfolio, index) => {
-                if (document.getElementById("portfolio-" + index).checked) {
-                    selectedPortfolios.push(portfolio);
-                }
-            });
+            selectedPortfolios = portfolios.filter((_, index) => 
+                document.getElementById(`portfolio-${index}`).checked
+            );
 
             if (selectedPortfolios.length === 0) {
                 alert("Please select at least one portfolio.");
@@ -153,41 +166,23 @@
             document.getElementById("stop-btn").classList.remove("hidden");
             document.getElementById("skip-btn").classList.remove("hidden");
 
-            timer = setInterval(function () {
+            timer = setInterval(() => {
                 timeLeft--;
                 document.getElementById("timer").innerText = timeLeft + " sec";
 
-                if (timeLeft === warningTime) {
-                    document.getElementById("timer").className = "timer warning";
-                } 
-                
+                if (timeLeft === warningTime) document.getElementById("timer").classList.add("warning");
                 if (timeLeft === 0) {
-                    document.getElementById("timer").className = "timer over";
+                    document.getElementById("timer").classList.add("over");
                     clearInterval(timer);
-
                     document.getElementById("skip-btn").classList.add("hidden");
                     document.getElementById("next-btn").classList.remove("hidden");
                 }
             }, 1000);
         }
 
-        function stopTimer() {
-            clearInterval(timer);
-            document.getElementById("next-btn").classList.remove("hidden");
-            document.getElementById("skip-btn").classList.add("hidden");
-        }
-
-        function skipNext() {
-            clearInterval(timer);
-            document.getElementById("skip-btn").classList.add("hidden");
-            document.getElementById("next-btn").classList.remove("hidden");
-        }
-
-        function nextPortfolio() {
-            document.getElementById("next-btn").classList.add("hidden");
-            loadPortfolio(currentIndex + 1);
-            startTimer();
-        }
+        function stopTimer() { clearInterval(timer); document.getElementById("next-btn").classList.remove("hidden"); }
+        function skipNext() { clearInterval(timer); document.getElementById("next-btn").classList.remove("hidden"); }
+        function nextPortfolio() { loadPortfolio(currentIndex + 1); startTimer(); }
     </script>
 
 </body>
