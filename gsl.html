@@ -21,10 +21,16 @@
         <button onclick="login()">Login</button>
     </div>
 
+    <div class="container hidden" id="portfolio-selection-container">
+        <h1>Select Portfolios for GSL</h1>
+        <h2 id="committee-name"></h2>
+        <div id="portfolio-list"></div>
+        <button onclick="startGSL()">Start GSL</button>
+    </div>
+
     <div class="container hidden" id="gsl-container">
         <h1>GSL Portfolio Matrix</h1>
-        <h2 id="committee-name"></h2>
-        <h3 id="portfolio-name"></h3>
+        <h2 id="portfolio-name"></h2>
 
         <label>GSL Time (seconds):</label>
         <input type="number" id="gsl-time" value="60"><br>
@@ -48,6 +54,7 @@
         var timeLeft;
         var warningTime;
         var portfolios = [];
+        var selectedPortfolios = [];
         var currentIndex = 0;
         var scriptURL = "https://script.google.com/macros/s/AKfycbyyLG9x6dMmoNO_Wd3jlbmqZDM43YHUOzJmMMsN6unVlWrH6TlEHkunrhi5DSAyhxpi/exec";
 
@@ -61,7 +68,7 @@
                     if (data.success) {
                         localStorage.setItem("committee", data.committee);
                         document.getElementById("login-container").classList.add("hidden");
-                        document.getElementById("gsl-container").classList.remove("hidden");
+                        document.getElementById("portfolio-selection-container").classList.remove("hidden");
                         fetchPortfolios();
                     } else {
                         alert("Invalid login credentials");
@@ -77,23 +84,59 @@
                 .then(response => response.json())
                 .then(data => {
                     portfolios = data.portfolios;
-                    if (portfolios.length > 0) {
-                        loadPortfolio(0);
-                    } else {
-                        alert("No portfolios assigned");
-                    }
+                    var portfolioList = document.getElementById("portfolio-list");
+                    portfolioList.innerHTML = "";
+
+                    portfolios.forEach(function (portfolio, index) {
+                        var checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.id = "portfolio-" + index;
+                        checkbox.value = portfolio;
+                        checkbox.checked = true;
+
+                        var label = document.createElement("label");
+                        label.htmlFor = "portfolio-" + index;
+                        label.innerText = " " + portfolio;
+
+                        var div = document.createElement("div");
+                        div.appendChild(checkbox);
+                        div.appendChild(label);
+                        portfolioList.appendChild(div);
+                    });
                 });
         }
 
+        function startGSL() {
+            selectedPortfolios = [];
+            portfolios.forEach((portfolio, index) => {
+                if (document.getElementById("portfolio-" + index).checked) {
+                    selectedPortfolios.push(portfolio);
+                }
+            });
+
+            if (selectedPortfolios.length === 0) {
+                alert("Please select at least one portfolio.");
+                return;
+            }
+
+            document.getElementById("portfolio-selection-container").classList.add("hidden");
+            document.getElementById("gsl-container").classList.remove("hidden");
+            loadPortfolio(0);
+        }
+
         function loadPortfolio(index) {
-            if (index >= portfolios.length) {
+            if (index >= selectedPortfolios.length) {
                 document.getElementById("gsl-container").classList.add("hidden");
                 document.getElementById("gsl-over").classList.remove("hidden");
                 return;
             }
 
-            document.getElementById("portfolio-name").innerText = "Portfolio: " + portfolios[index];
+            document.getElementById("portfolio-name").innerText = "Portfolio: " + selectedPortfolios[index];
             currentIndex = index;
+
+            document.getElementById("stop-btn").classList.add("hidden");
+            document.getElementById("skip-btn").classList.add("hidden");
+            document.getElementById("next-btn").classList.add("hidden");
         }
 
         function startTimer() {
@@ -116,6 +159,8 @@
                 if (timeLeft === 0) {
                     document.getElementById("timer").className = "timer over";
                     clearInterval(timer);
+
+                    document.getElementById("skip-btn").classList.add("hidden");
                     document.getElementById("next-btn").classList.remove("hidden");
                 }
             }, 1000);
@@ -124,12 +169,13 @@
         function stopTimer() {
             clearInterval(timer);
             document.getElementById("next-btn").classList.remove("hidden");
+            document.getElementById("skip-btn").classList.add("hidden");
         }
 
         function skipNext() {
             clearInterval(timer);
-            document.getElementById("next-btn").classList.add("hidden");
-            nextPortfolio();
+            document.getElementById("skip-btn").classList.add("hidden");
+            document.getElementById("next-btn").classList.remove("hidden");
         }
 
         function nextPortfolio() {
