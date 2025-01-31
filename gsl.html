@@ -4,13 +4,16 @@
     <title>GSL System</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f8f8f8; text-align: center; padding: 20px; }
-        .container { max-width: 500px; margin: auto; padding: 20px; background: #ddd; border-radius: 10px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; background: #ddd; border-radius: 10px; }
         input, button { margin: 10px 0; padding: 10px; width: 90%; }
         .hidden { display: none; }
         .timer { font-size: 24px; font-weight: bold; color: black; }
         .timer.warning { color: orange; }
         .timer.over { color: red; }
-        .portfolio-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+        .portfolio-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .portfolio-item { display: flex; align-items: center; gap: 10px; padding: 5px; background: #bbb; border-radius: 5px; padding: 8px; }
+        .portfolio-item label { font-weight: bold; }
+        .portfolio-item input { transform: scale(1.2); } /* Slightly bigger checkboxes */
     </style>
 </head>
 <body>
@@ -25,7 +28,7 @@
     <div class="container hidden" id="portfolio-selection-container">
         <h1>Select Portfolios for GSL</h1>
         <h2 id="committee-name"></h2>
-        <div id="portfolio-list"></div>
+        <div class="portfolio-container" id="portfolio-list"></div>
         <button onclick="startGSL()">Start GSL</button>
     </div>
 
