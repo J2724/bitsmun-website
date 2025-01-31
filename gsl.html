@@ -10,6 +10,7 @@
         .timer { font-size: 24px; font-weight: bold; color: black; }
         .timer.warning { color: orange; }
         .timer.over { color: red; }
+        .portfolio-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
     </style>
 </head>
 <body>
@@ -92,15 +93,16 @@
                         checkbox.type = "checkbox";
                         checkbox.id = "portfolio-" + index;
                         checkbox.value = portfolio;
-                        checkbox.checked = true;
+                        checkbox.checked = false;  // Initially unchecked
 
                         var label = document.createElement("label");
                         label.htmlFor = "portfolio-" + index;
-                        label.innerText = " " + portfolio;
+                        label.innerText = portfolio;
 
                         var div = document.createElement("div");
-                        div.appendChild(checkbox);
+                        div.classList.add("portfolio-item");
                         div.appendChild(label);
+                        div.appendChild(checkbox);
                         portfolioList.appendChild(div);
                     });
                 });
