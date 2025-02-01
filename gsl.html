@@ -19,16 +19,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('assets/img/bitsmun_black.png'); /* Replace with your image URL */
+            background-image: url('assets/img/bitsmun_black.png');
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
-            opacity: 0.5;
+            opacity: 1;
             z-index: 0;
             pointer-events: none;
         }
         .container { 
-            max-width: 500px; 
+            max-width: 800px; 
             margin: auto; 
             padding: 20px; 
             background: #ddd; 
@@ -46,13 +46,58 @@
         .timer.over { color: red; }
         
         .portfolio-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-        .portfolio-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 5px; background: #bbb; border-radius: 5px; }
-        .portfolio-item label { font-weight: bold; flex: 1; text-align: left; }
-        .portfolio-item input { transform: scale(1.2); margin-right: 10px; }
+        .portfolio-item { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    width: 100%; 
+    padding: 5px; 
+    background: #bbb; 
+    border-radius: 5px; 
+    position: relative; /* Required for absolute positioning of child elements */
+}
+.portfolio-item label { 
+    font-weight: bold; 
+    flex: 1; 
+    text-align: left; 
+    margin-right: 40px; /* Add space for the checkbox */
+}
+.portfolio-item input { 
+    transform: scale(1.2); /* Makes the checkbox slightly larger */
+    position: absolute; /* Positions the checkbox absolutely within its parent */
+    left: 350px; /* Fixed distance from the right */
+    top: 50%; /* Centers vertically */
+    transform: translateY(-50%) scale(1.2); /* Adjust for vertical centering and scaling */
+    margin: 0; /* Remove default margin */
+}
+        .gsl-content {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .timer-controls, .queue-section {
+            flex: 1;
+        }
+        .queue-section {
+            background: #ccc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #queue-list {
+            text-align: left;
+            margin-top: 10px;
+        }
+        #queue-list div {
+            padding: 5px;
+            margin: 5px 0;
+            background: #bbb;
+            border-radius: 4px;
+        }
 
         @media (max-width: 600px) {
             .container { width: 90%; }
             input, button { width: 95%; }
+            .gsl-content { flex-direction: column; }
         }
     </style>
 </head>
@@ -77,21 +122,25 @@
     <!-- GSL Timer -->
     <div class="container hidden" id="gsl-container">
         <h1>GSL Portfolio Matrix</h1>
-        <h2 id="portfolio-name"></h2>
-        <label>GSL Time (seconds):</label>
-        <input type="number" id="gsl-time" value="60"><br>
-
-        <label>Warning Time (seconds):</label>
-        <input type="number" id="warning-time" value="10"><br>
-
-        <button onclick="startTimer()">Start</button>
-        <button onclick="stopTimer()" id="stop-btn" class="hidden">Stop</button>
-        <button onclick="skipNext()" id="skip-btn" class="hidden">Skip & Next</button>
-
-        <h2 id="timer" class="timer">60 sec</h2>
-
-        <button id="next-btn" class="hidden" onclick="nextPortfolio()">Next</button>
-        <h2 id="gsl-over" class="hidden" style="color: green;">✅ GSL is Over!</h2>
+        <div class="gsl-content">
+            <div class="timer-controls">
+                <h2 id="portfolio-name"></h2>
+                <label>GSL Time (seconds):</label>
+                <input type="number" id="gsl-time" value="60"><br>
+                <label>Warning Time (seconds):</label>
+                <input type="number" id="warning-time" value="10"><br>
+                <button onclick="startTimer()">Start</button>
+                <button onclick="stopTimer()" id="stop-btn" class="hidden">Stop</button>
+                <button onclick="skipNext()" id="skip-btn" class="hidden">Skip & Next</button>
+                <h2 id="timer" class="timer">60 sec</h2>
+                <button id="next-btn" class="hidden" onclick="nextPortfolio()">Next</button>
+                <h2 id="gsl-over" class="hidden" style="color: green;">✅ GSL is Over!</h2>
+            </div>
+            <div class="queue-section">
+                <h3>GSL Queue</h3>
+                <div id="queue-list"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -138,6 +187,20 @@
                     checkbox.type = "checkbox";
                     checkbox.id = `portfolio-${index}`;
                     checkbox.value = portfolio;
+                    
+                    checkbox.addEventListener('change', function(e) {
+                        const portfolio = e.target.value;
+                        if (e.target.checked) {
+                            if (!selectedPortfolios.includes(portfolio)) {
+                                selectedPortfolios.push(portfolio);
+                            }
+                        } else {
+                            const index = selectedPortfolios.indexOf(portfolio);
+                            if (index > -1) {
+                                selectedPortfolios.splice(index, 1);
+                            }
+                        }
+                    });
 
                     let label = document.createElement("label");
                     label.htmlFor = `portfolio-${index}`;
@@ -157,10 +220,6 @@
         }
 
         function startGSL() {
-            selectedPortfolios = portfolios.filter((_, index) => 
-                document.getElementById(`portfolio-${index}`).checked
-            );
-
             if (selectedPortfolios.length === 0) {
                 alert("Please select at least one portfolio.");
                 return;
@@ -180,10 +239,29 @@
 
             document.getElementById("portfolio-name").innerText = "Portfolio: " + selectedPortfolios[index];
             currentIndex = index;
+            updateQueueDisplay();
 
             document.getElementById("stop-btn").classList.add("hidden");
             document.getElementById("skip-btn").classList.add("hidden");
             document.getElementById("next-btn").classList.add("hidden");
+        }
+
+        function updateQueueDisplay() {
+            const queueList = document.getElementById('queue-list');
+            queueList.innerHTML = '';
+            
+            if (currentIndex < selectedPortfolios.length) {
+                const currentItem = document.createElement('div');
+                currentItem.textContent = `Current: ${selectedPortfolios[currentIndex]}`;
+                currentItem.style.fontWeight = 'bold';
+                queueList.appendChild(currentItem);
+            }
+
+            for (let i = currentIndex + 1; i < selectedPortfolios.length; i++) {
+                const item = document.createElement('div');
+                item.textContent = `Next ${i - currentIndex}: ${selectedPortfolios[i]}`;
+                queueList.appendChild(item);
+            }
         }
 
         function startTimer() {
