@@ -3,296 +3,313 @@
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-QVJ6R0VPFQ"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSL System</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #f8f8f8; 
-            text-align: center; 
-            padding: 20px;
-            position: relative;
-        }
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('assets/img/bitsmun_black.png');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            opacity: 1;
-            z-index: 0;
-            pointer-events: none;
-        }
-        .container { 
-            max-width: 800px; 
-            margin: auto; 
-            padding: 20px; 
-            background: #ddd; 
-            border-radius: 10px; 
-            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 1;
-        }
-        input, button { margin: 10px 0; padding: 10px; width: 90%; border: none; border-radius: 5px; }
-        button { background: #444; color: white; cursor: pointer; font-size: 16px; }
-        button:hover { background: #333; }
-        .hidden { display: none; }
-        .timer { font-size: 24px; font-weight: bold; color: black; }
-        .timer.warning { color: orange; }
-        .timer.over { color: red; }
-        
-        .portfolio-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-        .portfolio-item { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    width: 100%; 
-    padding: 5px; 
-    background: #bbb; 
-    border-radius: 5px; 
-    position: relative; /* Required for absolute positioning of child elements */
-}
-.portfolio-item label { 
-    font-weight: bold; 
-    flex: 1; 
-    text-align: left; 
-    margin-right: 40px; /* Add space for the checkbox */
-}
-.portfolio-item input { 
-    transform: scale(1.2); /* Makes the checkbox slightly larger */
-    position: absolute; /* Positions the checkbox absolutely within its parent */
-    left: 350px; /* Fixed distance from the right */
-    top: 50%; /* Centers vertically */
-    transform: translateY(-50%) scale(1.2); /* Adjust for vertical centering and scaling */
-    margin: 0; /* Remove default margin */
-}
-        .gsl-content {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .timer-controls, .queue-section {
-            flex: 1;
-        }
-        .queue-section {
-            background: #ccc;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        #queue-list {
-            text-align: left;
-            margin-top: 10px;
-        }
-        #queue-list div {
-            padding: 5px;
-            margin: 5px 0;
-            background: #bbb;
-            border-radius: 4px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSL System</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f8f8f8; 
+      text-align: center; 
+      padding: 20px;
+      position: relative;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('assets/img/bitsmun_black.png');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      opacity: 1;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .container { 
+      max-width: 800px; 
+      margin: auto; 
+      padding: 20px; 
+      background: #ddd; 
+      border-radius: 10px; 
+      box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+    }
+    input, button { 
+      margin: 10px 0; 
+      padding: 10px; 
+      width: 90%; 
+      border: none; 
+      border-radius: 5px; 
+    }
+    button { 
+      background: #444; 
+      color: white; 
+      cursor: pointer; 
+      font-size: 16px; 
+    }
+    button:hover { 
+      background: #333; 
+    }
+    .hidden { 
+      display: none; 
+    }
+    .timer { 
+      font-size: 24px; 
+      font-weight: bold; 
+      color: black; 
+    }
+    .timer.warning { 
+      color: orange; 
+    }
+    .timer.over { 
+      color: red; 
+    }
+    .portfolio-container { 
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr); 
+      gap: 10px; 
+      margin-top: 20px;
+    }
+    .portfolio-item { 
+      padding: 15px;
+      background: #bbb;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-align: center;
+      font-weight: bold;
+    }
+    .portfolio-item.selected {
+      background: #4CAF50;
+      color: white;
+    }
+    .gsl-content {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .timer-controls, .queue-section {
+      flex: 1;
+    }
+    .queue-section {
+      background: #ccc;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    #queue-list {
+      text-align: left;
+      margin-top: 10px;
+    }
+    #queue-list div {
+      padding: 5px;
+      margin: 5px 0;
+      background: #bbb;
+      border-radius: 4px;
+    }
 
-        @media (max-width: 600px) {
-            .container { width: 90%; }
-            input, button { width: 95%; }
-            .gsl-content { flex-direction: column; }
-        }
-    </style>
+    @media (max-width: 600px) {
+      .container { width: 90%; }
+      input, button { width: 95%; }
+      .gsl-content { flex-direction: column; }
+      .portfolio-container { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
+  <!-- Login -->
+  <div class="container" id="login-container">
+    <h1>GSL Login</h1>
+    <input type="text" id="username" placeholder="Enter Username"><br>
+    <input type="password" id="password" placeholder="Enter Password"><br>
+    <button onclick="login()">Login</button>
+  </div>
 
-    <!-- Login -->
-    <div class="container" id="login-container">
-        <h1>GSL Login</h1>
-        <input type="text" id="username" placeholder="Enter Username"><br>
-        <input type="password" id="password" placeholder="Enter Password"><br>
-        <button onclick="login()">Login</button>
+  <!-- Portfolio Selection -->
+  <div class="container hidden" id="portfolio-selection-container">
+    <h1>Select Portfolios for GSL</h1>
+    <h2 id="committee-name"></h2>
+    <div class="portfolio-container" id="portfolio-list"></div>
+    <button onclick="startGSL()">Start GSL</button>
+  </div>
+
+  <!-- GSL Timer -->
+  <div class="container hidden" id="gsl-container">
+    <h1>GSL Portfolio Matrix</h1>
+    <div class="gsl-content">
+      <div class="timer-controls">
+        <h2 id="portfolio-name"></h2>
+        <label>GSL Time (seconds):</label>
+        <input type="number" id="gsl-time" value="60"><br>
+        <label>Warning Time (seconds):</label>
+        <input type="number" id="warning-time" value="10"><br>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="stopTimer()" id="stop-btn" class="hidden">Stop</button>
+        <button onclick="skipNext()" id="skip-btn" class="hidden">Skip & Next</button>
+        <h2 id="timer" class="timer">60 sec</h2>
+        <button id="next-btn" class="hidden" onclick="nextPortfolio()">Next</button>
+        <h2 id="gsl-over" class="hidden" style="color: green;">✅ GSL is Over!</h2>
+      </div>
+      <div class="queue-section">
+        <h3>GSL Queue</h3>
+        <div id="queue-list"></div>
+      </div>
     </div>
+  </div>
 
-    <!-- Portfolio Selection -->
-    <div class="container hidden" id="portfolio-selection-container">
-        <h1>Select Portfolios for GSL</h1>
-        <h2 id="committee-name"></h2>
-        <div class="portfolio-container" id="portfolio-list"></div>
-        <button onclick="startGSL()">Start GSL</button>
-    </div>
+  <script>
+    var timer, timeLeft, warningTime;
+    var portfolios = [], selectedPortfolios = [], currentIndex = 0;
+    var scriptURL = "https://script.google.com/macros/s/AKfycbyyLG9x6dMmoNO_Wd3jlbmqZDM43YHUOzJmMMsN6unVlWrH6TlEHkunrhi5DSAyhxpi/exec";
 
-    <!-- GSL Timer -->
-    <div class="container hidden" id="gsl-container">
-        <h1>GSL Portfolio Matrix</h1>
-        <div class="gsl-content">
-            <div class="timer-controls">
-                <h2 id="portfolio-name"></h2>
-                <label>GSL Time (seconds):</label>
-                <input type="number" id="gsl-time" value="60"><br>
-                <label>Warning Time (seconds):</label>
-                <input type="number" id="warning-time" value="10"><br>
-                <button onclick="startTimer()">Start</button>
-                <button onclick="stopTimer()" id="stop-btn" class="hidden">Stop</button>
-                <button onclick="skipNext()" id="skip-btn" class="hidden">Skip & Next</button>
-                <h2 id="timer" class="timer">60 sec</h2>
-                <button id="next-btn" class="hidden" onclick="nextPortfolio()">Next</button>
-                <h2 id="gsl-over" class="hidden" style="color: green;">✅ GSL is Over!</h2>
-            </div>
-            <div class="queue-section">
-                <h3>GSL Queue</h3>
-                <div id="queue-list"></div>
-            </div>
-        </div>
-    </div>
+    async function login() {
+      let username = document.getElementById("username").value;
+      let password = document.getElementById("password").value;
 
-    <script>
-        var timer, timeLeft, warningTime;
-        var portfolios = [], selectedPortfolios = [], currentIndex = 0;
-        var scriptURL = "https://script.google.com/macros/s/AKfycbyyLG9x6dMmoNO_Wd3jlbmqZDM43YHUOzJmMMsN6unVlWrH6TlEHkunrhi5DSAyhxpi/exec";
-
-        async function login() {
-            let username = document.getElementById("username").value;
-            let password = document.getElementById("password").value;
-
-            try {
-                let response = await fetch(`${scriptURL}?user=${username}&pass=${password}`);
-                let data = await response.json();
-                
-                if (data.success) {
-                    localStorage.setItem("committee", data.committee);
-                    document.getElementById("login-container").classList.add("hidden");
-                    document.getElementById("portfolio-selection-container").classList.remove("hidden");
-                    fetchPortfolios();
-                } else {
-                    alert("Invalid login credentials");
-                }
-            } catch (error) {
-                console.error("Login Error:", error);
-                alert("Network error. Try again.");
-            }
+      try {
+        let response = await fetch(`${scriptURL}?user=${username}&pass=${password}`);
+        let data = await response.json();
+        
+        if (data.success) {
+          localStorage.setItem("committee", data.committee);
+          document.getElementById("login-container").classList.add("hidden");
+          document.getElementById("portfolio-selection-container").classList.remove("hidden");
+          fetchPortfolios();
+        } else {
+          alert("Invalid login credentials");
         }
+      } catch (error) {
+        console.error("Login Error:", error);
+        alert("Network error. Try again.");
+      }
+    }
 
-        async function fetchPortfolios() {
-            let committee = localStorage.getItem("committee");
-            document.getElementById("committee-name").innerText = "Committee: " + committee;
+    async function fetchPortfolios() {
+      let committee = localStorage.getItem("committee");
+      document.getElementById("committee-name").innerText = "Committee: " + committee;
 
-            try {
-                let response = await fetch(`${scriptURL}?committee=${committee}`);
-                let data = await response.json();
+      try {
+        let response = await fetch(`${scriptURL}?committee=${committee}`);
+        let data = await response.json();
 
-                portfolios = data.portfolios;
-                let portfolioList = document.getElementById("portfolio-list");
-                portfolioList.innerHTML = "";
+        portfolios = data.portfolios;
+        let portfolioList = document.getElementById("portfolio-list");
+        portfolioList.innerHTML = "";
 
-                portfolios.forEach((portfolio, index) => {
-                    let checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.id = `portfolio-${index}`;
-                    checkbox.value = portfolio;
-                    
-                    checkbox.addEventListener('change', function(e) {
-                        const portfolio = e.target.value;
-                        if (e.target.checked) {
-                            if (!selectedPortfolios.includes(portfolio)) {
-                                selectedPortfolios.push(portfolio);
-                            }
-                        } else {
-                            const index = selectedPortfolios.indexOf(portfolio);
-                            if (index > -1) {
-                                selectedPortfolios.splice(index, 1);
-                            }
-                        }
-                    });
-
-                    let label = document.createElement("label");
-                    label.htmlFor = `portfolio-${index}`;
-                    label.innerText = portfolio;
-
-                    let div = document.createElement("div");
-                    div.classList.add("portfolio-item");
-                    div.appendChild(label);
-                    div.appendChild(checkbox);
-                    portfolioList.appendChild(div);
-                });
-
-            } catch (error) {
-                console.error("Fetch Portfolios Error:", error);
-                alert("Failed to load portfolios.");
-            }
-        }
-
-        function startGSL() {
-            if (selectedPortfolios.length === 0) {
-                alert("Please select at least one portfolio.");
-                return;
-            }
-
-            document.getElementById("portfolio-selection-container").classList.add("hidden");
-            document.getElementById("gsl-container").classList.remove("hidden");
-            loadPortfolio(0);
-        }
-
-        function loadPortfolio(index) {
-            if (index >= selectedPortfolios.length) {
-                document.getElementById("gsl-container").classList.add("hidden");
-                document.getElementById("gsl-over").classList.remove("hidden");
-                return;
-            }
-
-            document.getElementById("portfolio-name").innerText = "Portfolio: " + selectedPortfolios[index];
-            currentIndex = index;
-            updateQueueDisplay();
-
-            document.getElementById("stop-btn").classList.add("hidden");
-            document.getElementById("skip-btn").classList.add("hidden");
-            document.getElementById("next-btn").classList.add("hidden");
-        }
-
-        function updateQueueDisplay() {
-            const queueList = document.getElementById('queue-list');
-            queueList.innerHTML = '';
+        portfolios.forEach((portfolio) => {
+          let div = document.createElement("div");
+          div.classList.add("portfolio-item");
+          div.innerText = portfolio;
+          
+          div.addEventListener('click', function() {
+            const index = selectedPortfolios.indexOf(portfolio);
             
-            if (currentIndex < selectedPortfolios.length) {
-                const currentItem = document.createElement('div');
-                currentItem.textContent = `Current: ${selectedPortfolios[currentIndex]}`;
-                currentItem.style.fontWeight = 'bold';
-                queueList.appendChild(currentItem);
+            if (index === -1) {
+              // Add to selection
+              selectedPortfolios.push(portfolio);
+              div.classList.add('selected');
+            } else {
+              // Remove from selection
+              selectedPortfolios.splice(index, 1);
+              div.classList.remove('selected');
             }
+          });
 
-            for (let i = currentIndex + 1; i < selectedPortfolios.length; i++) {
-                const item = document.createElement('div');
-                item.textContent = `Next ${i - currentIndex}: ${selectedPortfolios[i]}`;
-                queueList.appendChild(item);
-            }
+          portfolioList.appendChild(div);
+        });
+
+      } catch (error) {
+        console.error("Fetch Portfolios Error:", error);
+        alert("Failed to load portfolios.");
+      }
+    }
+
+    function startGSL() {
+      if (selectedPortfolios.length === 0) {
+        alert("Please select at least one portfolio.");
+        return;
+      }
+
+      document.getElementById("portfolio-selection-container").classList.add("hidden");
+      document.getElementById("gsl-container").classList.remove("hidden");
+      loadPortfolio(0);
+    }
+
+    function loadPortfolio(index) {
+      if (index >= selectedPortfolios.length) {
+        document.getElementById("gsl-container").classList.add("hidden");
+        document.getElementById("gsl-over").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("portfolio-name").innerText = "Portfolio: " + selectedPortfolios[index];
+      currentIndex = index;
+      updateQueueDisplay();
+
+      document.getElementById("stop-btn").classList.add("hidden");
+      document.getElementById("skip-btn").classList.add("hidden");
+      document.getElementById("next-btn").classList.add("hidden");
+    }
+
+    function updateQueueDisplay() {
+      const queueList = document.getElementById('queue-list');
+      queueList.innerHTML = '';
+      
+      if (currentIndex < selectedPortfolios.length) {
+        const currentItem = document.createElement('div');
+        currentItem.textContent = `Current: ${selectedPortfolios[currentIndex]}`;
+        currentItem.style.fontWeight = 'bold';
+        queueList.appendChild(currentItem);
+      }
+
+      for (let i = currentIndex + 1; i < selectedPortfolios.length; i++) {
+        const item = document.createElement('div');
+        item.textContent = `Next ${i - currentIndex}: ${selectedPortfolios[i]}`;
+        queueList.appendChild(item);
+      }
+    }
+
+    function startTimer() {
+      timeLeft = parseInt(document.getElementById("gsl-time").value);
+      warningTime = parseInt(document.getElementById("warning-time").value);
+      document.getElementById("timer").className = "timer";
+      document.getElementById("timer").innerText = timeLeft + " sec";
+
+      document.getElementById("stop-btn").classList.remove("hidden");
+      document.getElementById("skip-btn").classList.remove("hidden");
+
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = timeLeft + " sec";
+
+        if (timeLeft === warningTime) document.getElementById("timer").classList.add("warning");
+        if (timeLeft === 0) {
+          document.getElementById("timer").classList.add("over");
+          clearInterval(timer);
+          document.getElementById("skip-btn").classList.add("hidden");
+          document.getElementById("next-btn").classList.remove("hidden");
         }
+      }, 1000);
+    }
 
-        function startTimer() {
-            timeLeft = parseInt(document.getElementById("gsl-time").value);
-            warningTime = parseInt(document.getElementById("warning-time").value);
-            document.getElementById("timer").className = "timer";
-            document.getElementById("timer").innerText = timeLeft + " sec";
+    function stopTimer() { 
+      clearInterval(timer); 
+      document.getElementById("next-btn").classList.remove("hidden"); 
+    }
 
-            document.getElementById("stop-btn").classList.remove("hidden");
-            document.getElementById("skip-btn").classList.remove("hidden");
+    function skipNext() { 
+      clearInterval(timer); 
+      document.getElementById("next-btn").classList.remove("hidden"); 
+    }
 
-            timer = setInterval(() => {
-                timeLeft--;
-                document.getElementById("timer").innerText = timeLeft + " sec";
-
-                if (timeLeft === warningTime) document.getElementById("timer").classList.add("warning");
-                if (timeLeft === 0) {
-                    document.getElementById("timer").classList.add("over");
-                    clearInterval(timer);
-                    document.getElementById("skip-btn").classList.add("hidden");
-                    document.getElementById("next-btn").classList.remove("hidden");
-                }
-            }, 1000);
-        }
-
-        function stopTimer() { clearInterval(timer); document.getElementById("next-btn").classList.remove("hidden"); }
-        function skipNext() { clearInterval(timer); document.getElementById("next-btn").classList.remove("hidden"); }
-        function nextPortfolio() { loadPortfolio(currentIndex + 1); startTimer(); }
-    </script>
-
+    function nextPortfolio() { 
+      loadPortfolio(currentIndex + 1); 
+      startTimer(); 
+    }
+  </script>
 </body>
 </html>
