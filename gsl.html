@@ -111,6 +111,11 @@
       background: #bbb;
       border-radius: 4px;
     }
+    #search-input {
+      width: 95%;
+      padding: 12px;
+      margin: 15px 0;
+    }
 
     @media (max-width: 600px) {
       .container { width: 90%; }
@@ -133,6 +138,7 @@
   <div class="container hidden" id="portfolio-selection-container">
     <h1>Select Portfolios for GSL</h1>
     <h2 id="committee-name"></h2>
+    <input type="text" id="search-input" placeholder="Search portfolios..." oninput="filterPortfolios()">
     <div class="portfolio-container" id="portfolio-list"></div>
     <button onclick="startGSL()">Start GSL</button>
   </div>
@@ -197,35 +203,42 @@
         let data = await response.json();
 
         portfolios = data.portfolios;
-        let portfolioList = document.getElementById("portfolio-list");
-        portfolioList.innerHTML = "";
-
-        portfolios.forEach((portfolio) => {
-          let div = document.createElement("div");
-          div.classList.add("portfolio-item");
-          div.innerText = portfolio;
-          
-          div.addEventListener('click', function() {
-            const index = selectedPortfolios.indexOf(portfolio);
-            
-            if (index === -1) {
-              // Add to selection
-              selectedPortfolios.push(portfolio);
-              div.classList.add('selected');
-            } else {
-              // Remove from selection
-              selectedPortfolios.splice(index, 1);
-              div.classList.remove('selected');
-            }
-          });
-
-          portfolioList.appendChild(div);
-        });
-
+        filterPortfolios(); // Initial render
       } catch (error) {
         console.error("Fetch Portfolios Error:", error);
         alert("Failed to load portfolios.");
       }
+    }
+
+    function filterPortfolios() {
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      const filtered = portfolios.filter(p => p.toLowerCase().includes(searchQuery));
+      const portfolioList = document.getElementById("portfolio-list");
+      portfolioList.innerHTML = "";
+
+      filtered.forEach(portfolio => {
+        const div = document.createElement("div");
+        div.classList.add("portfolio-item");
+        div.textContent = portfolio;
+        
+        if (selectedPortfolios.includes(portfolio)) {
+          div.classList.add('selected');
+        }
+
+        div.addEventListener('click', function() {
+          const index = selectedPortfolios.indexOf(portfolio);
+          
+          if (index === -1) {
+            selectedPortfolios.push(portfolio);
+            div.classList.add('selected');
+          } else {
+            selectedPortfolios.splice(index, 1);
+            div.classList.remove('selected');
+          }
+        });
+
+        portfolioList.appendChild(div);
+      });
     }
 
     function startGSL() {
