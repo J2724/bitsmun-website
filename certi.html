@@ -155,8 +155,8 @@
 
   <main>
 	<div style="margin-top: 100px; text-align: center; display: flex; justify-content: center; flex-direction: column; align-items: center;">
-	  <h1>Download your ID Cards</h1>
-    <p>This is to make registration easier. On Day 1, you will receive a physical ID card.</p>
+	  <h1>Download your Participation Certificates</h1>
+    <!--<p>For queries regarding cerificates contact Jash maniar: 7021350976</p>-->
 	  <form id="allotment-form" style="text-align: center;">
 		<input type="text" id="phone" placeholder="Enter your phone number(10 digits, no spaces)" required style="padding: 10px; width: 355px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #888;">
 		<button type="submit" style="
@@ -181,7 +181,7 @@
 	  e.preventDefault();
 	  const phone = document.getElementById('phone').value.trim();
 	  const resultDiv = document.getElementById('result');
-	  resultDiv.textContent = "Checking...";
+	  resultDiv.textContent = "Fetching...";
   
 	  try {
 		const response = await fetch(`https://script.google.com/macros/s/AKfycbxNeapw_m-G11VTklzWG2Py9qX5ETocTYNiN3XTreTLvqp_J4OlNMTZ8oTHrMO9QgA-/exec?phone=${phone}`);
@@ -189,7 +189,7 @@
   
 		if (data.status === "success") {
 		  resultDiv.innerHTML = `
-			<p><strong>ID Card:</strong><a href="${data.idcard}" style="color: #007bff; text-decoration: underline;">LINK</a></p>
+			<p><strong>Certificate:</strong><a href="${data.certi}" style="color: #007bff; text-decoration: underline;">LINK</a></p>
 		  `;
 		} else {
 		  resultDiv.innerHTML = `
